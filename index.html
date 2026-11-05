@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ffe3ec">
+<title>happy birthday!</title>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Baloo+2:wght@800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:"Comfortaa",sans-serif;color:#222;height:100vh;height:100dvh;overflow:hidden}
+
+/* ---------- Màn + chuyển cảnh ---------- */
+.stage{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  text-align:center;padding:20px;overflow:hidden;opacity:0;visibility:hidden;transform:scale(1.08);filter:blur(6px);
+  transition:opacity .8s,transform .8s,filter .8s,visibility .8s}
+.stage.active{opacity:1;visibility:visible;transform:none;filter:none}
+.stage>*:not(.deco){position:relative;z-index:2}
+.deco{position:absolute;z-index:0;pointer-events:none;user-select:none;line-height:1}
+
+/* ---------- Nền ---------- */
+.bg-stars{background:#f3f4e9}
+.bg-gingham{background-color:#fff;background-image:linear-gradient(90deg,rgba(150,190,230,.45) 50%,transparent 50%),linear-gradient(rgba(150,190,230,.45) 50%,transparent 50%);background-size:34px 34px}
+.bg-pink{background:#ffe3ec}
+
+/* ---------- Ảnh rơi + tim (màn cuối) ---------- */
+.rain{inset:0;overflow:hidden}
+.drop,.fheart{position:absolute;top:-240px;animation:fall linear forwards}
+.drop img{width:100%;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.15));animation:swing ease-in-out infinite alternate}
+@keyframes fall{to{transform:translateY(calc(100vh + 340px))}}
+@keyframes swing{from{transform:translateX(-16px) rotate(-12deg)}to{transform:translateX(16px) rotate(12deg)}}
+
+/* ---------- Chuyển động trang trí ---------- */
+.twinkle{animation:tw 2.4s ease-in-out infinite alternate}
+@keyframes tw{from{transform:scale(.6);opacity:.4}to{transform:scale(1.25) rotate(25deg);opacity:1}}
+.sway{animation:sway 3s ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(calc(var(--r) - 10deg))}to{transform:rotate(calc(var(--r) + 10deg)) translateY(-10px)}}
+.rise{animation:rise linear infinite}
+@keyframes rise{50%{transform:translate(25px,-60vh)}100%{transform:translate(-10px,-130vh)}}
+.bob{animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-10px) rotate(-3deg)}}
+@keyframes popIn{from{transform:scale(0);opacity:0}}
+.wave span{display:inline-block;animation:wave 1.6s ease-in-out infinite}
+@keyframes wave{50%{transform:translateY(-12px)}}
+.trail{position:fixed;pointer-events:none;z-index:999;font-size:14px;animation:trail .8s forwards}
+@keyframes trail{to{transform:translateY(24px) scale(0) rotate(180deg);opacity:0}}
+
+/* ---------- Chữ ---------- */
+.txt{font-size:clamp(20px,4.8vw,28px);font-weight:700;letter-spacing:1px;max-width:600px;min-height:1.4em;line-height:1.5}
+.title{font-size:clamp(30px,7vw,52px);font-weight:700;min-height:1.3em}
+.pop{transform:scale(0);transition:transform .6s cubic-bezier(.3,1.7,.5,1)}
+.pop.in{transform:scale(1)}
+.later{display:none}
+.later.in{display:flex;flex-direction:column;align-items:center;animation:popIn .6s cubic-bezier(.3,1.7,.5,1)}
+
+/* ---------- Ảnh chibi ---------- */
+.hero-chibi{max-width:70vw;display:block;filter:drop-shadow(0 8px 10px rgba(0,0,0,.15))}
+.stk-chibi{width:105px;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.15))}
+
+/* Màn 2: bánh + 2 ảnh hai bên */
+.trio{display:flex;align-items:flex-end;justify-content:center;gap:8px}
+.cakeWrap{max-width:46vw}
+.cakeWrap img{width:100%;display:block}
+.side{max-width:25vw;display:block}
+.flip{transform:scaleX(-1)}
+
+/* ---------- NÚT THẠCH TÍM ---------- */
+.btns{gap:40px;flex-direction:row!important;flex-wrap:wrap;justify-content:center}
+.jelly{--h:#8a55d6;position:relative;border:none;cursor:pointer;color:#fff;
+  font-family:"Baloo 2","Arial Rounded MT Bold","Arial Black",sans-serif;font-weight:800;font-size:44px;letter-spacing:2px;
+  width:220px;padding:12px 0 8px;border-radius:30px;
+  background:linear-gradient(170deg,#f3e3ff 0%,#d9b8ff 45%,#b27cff 100%);
+  box-shadow:0 10px 0 var(--h),0 18px 24px rgba(110,60,180,.35);
+  text-shadow:3px 0 var(--h),-3px 0 var(--h),0 3px var(--h),0 -3px var(--h),2px 2px var(--h),-2px -2px var(--h),2px -2px var(--h),-2px 2px var(--h);
+  transition:transform .15s,box-shadow .15s,translate .4s cubic-bezier(.3,1.5,.5,1),scale .4s;
+  animation:breathe 2.2s ease-in-out infinite}
+.jelly::before{content:"";position:absolute;left:6%;right:6%;top:8%;height:30%;border-radius:20px;background:rgba(255,255,255,.4)}
+.jelly::after{content:"";position:absolute;right:9%;bottom:15%;width:30px;height:8px;border-radius:6px;background:#fff}
+.jelly .lbl{position:relative;z-index:1;white-space:nowrap}
+.jelly .spk{position:absolute;color:#fff6c2;font-size:18px;text-shadow:none;animation:tw 1.6s ease-in-out infinite alternate}
+.jelly .twin{position:absolute;top:-30px;right:-34px;display:flex;align-items:flex-start}
+.jelly .twin svg{animation:spin 4s linear infinite}
+.jelly .twin svg+svg{animation-duration:5s;animation-direction:reverse;margin-top:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes breathe{50%{transform:scale(1.04) translateY(-3px)}}
+.jelly:hover{animation:jello .7s}
+@keyframes jello{30%{transform:scale(1.15,.85)}45%{transform:scale(.9,1.1)}60%{transform:scale(1.06,.95)}75%{transform:scale(.98,1.02)}}
+.jelly:active{transform:translateY(8px)!important;box-shadow:0 2px 0 var(--h),0 6px 10px rgba(110,60,180,.3)}
+.jelly.sm{font-size:22px;width:auto;padding:10px 34px 8px;border-radius:22px;box-shadow:0 7px 0 var(--h),0 12px 18px rgba(110,60,180,.3);
+  text-shadow:2px 0 var(--h),-2px 0 var(--h),0 2px var(--h),0 -2px var(--h),1px 1px var(--h),-1px -1px var(--h)}
+.jelly.sm::after{width:16px;height:5px;right:7%}
+.jelly.sm .spk{font-size:11px}
+
+/* ---------- Thẻ có chibi trên mép ---------- */
+.card{background:#f4f5ec;border:2px solid #2d2d2d;border-radius:28px;box-shadow:0 8px 20px rgba(0,0,0,.12);
+  width:min(360px,88vw);min-height:250px;margin-top:100px;padding:60px 22px 26px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.card .top{position:absolute;top:-105px;left:50%;transform:translateX(-50%)}
+
+/* ---------- Bánh kem thổi nến ---------- */
+.bcake{position:relative;width:220px;height:200px;cursor:pointer;margin-top:20px}
+.plate{position:absolute;bottom:0;left:-12px;right:-12px;height:18px;background:#fff;border:3px solid #333;border-radius:50%}
+.tier{position:absolute;left:50%;transform:translateX(-50%);border:3px solid #333;border-radius:16px;overflow:hidden}
+.tier::before{content:"";position:absolute;top:0;left:0;right:0;height:24px;
+  background:radial-gradient(circle at 50% 0,#fff 11px,transparent 12px) 0 0/22px 24px repeat-x,linear-gradient(#fff,#fff) 0 0/100% 10px no-repeat}
+.t1{bottom:10px;width:200px;height:80px;background:#f8c8d6 radial-gradient(#fff 2px,transparent 3px) 0 0/20px 20px}
+.t2{bottom:87px;width:140px;height:58px;background:#d9c2ff radial-gradient(#fff 2px,transparent 3px) 0 0/18px 18px}
+.candles{position:absolute;bottom:142px;left:50%;transform:translateX(-50%);display:flex;gap:26px}
+.cdl{position:relative;width:12px;height:40px;border:2.5px solid #333;border-radius:4px;background:repeating-linear-gradient(45deg,#fff 0 5px,#b98cff 5px 10px)}
+.fl{position:absolute;left:50%;bottom:100%;width:16px;height:24px;margin:0 0 3px -8px;transform-origin:50% 100%;
+  background:radial-gradient(circle at 50% 70%,#fff8c4 15%,#ffd54f 45%,#ff9800 80%);
+  border-radius:50% 50% 50% 50%/60% 60% 40% 40%;box-shadow:0 0 18px 6px rgba(255,200,80,.55);
+  animation:flick .2s infinite alternate;transition:opacity .3s}
+@keyframes flick{from{transform:rotate(calc(var(--lean,0deg) - 3deg))}to{transform:rotate(calc(var(--lean,0deg) + 3deg)) scale(1.08,1.15)}}
+.cdl.out .fl{opacity:0;animation:none}
+.smoke{position:absolute;left:50%;bottom:100%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:rgba(140,140,140,.6);opacity:0}
+.cdl.out .smoke{animation:smoke 1.6s ease-out forwards}
+@keyframes smoke{0%{opacity:.8;transform:scale(.5)}100%{opacity:0;transform:translate(10px,-70px) scale(3)}}
+.meter{width:200px;height:12px;border:2px solid #333;border-radius:10px;overflow:hidden;background:#fff}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#d9b8ff,#b27cff);transition:width .08s}
+.hint{font-size:14px;line-height:1.5}
+
+/* ---------- Hộp quà ---------- */
+.gift{position:relative;width:140px;height:130px;cursor:pointer;animation:shake 1.2s infinite}
+@keyframes shake{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-8deg)}80%{transform:rotate(8deg)}90%{transform:rotate(-4deg)}}
+.box,.lid{position:absolute;border:3px solid #333;border-radius:10px;background-image:linear-gradient(90deg,transparent 44%,#ff9eb5 44% 56%,transparent 56%)}
+.box{bottom:0;left:10px;width:120px;height:90px;background-color:#d9c2ff}
+.lid{top:14px;left:0;width:140px;height:30px;background-color:#b27cff;z-index:2;transition:transform .8s cubic-bezier(.3,1.5,.6,1),opacity .8s}
+.lid::before,.lid::after{content:"";position:absolute;top:-28px;width:34px;height:28px;border:3px solid #333;background:#ff9eb5}
+.lid::before{left:34px;border-radius:60% 60% 10% 60%;transform:rotate(-20deg)}
+.lid::after{left:66px;border-radius:60% 60% 60% 10%;transform:rotate(20deg)}
+.gift.open{animation:none}
+.gift.open .lid{transform:translate(70px,-170px) rotate(50deg);opacity:0}
+
+/* Khung ảnh quà */
+.frame{position:relative;padding:12px;background:#fff;border:3px solid #333;border-radius:20px;transform:rotate(-2deg);
+  box-shadow:0 0 0 7px #ffc2d4,0 0 0 10px #333,0 14px 26px rgba(0,0,0,.2);margin:14px 0 10px}
+.frame img{width:min(240px,62vw);display:block;border-radius:12px}
+.frame::before{content:"🎀";position:absolute;top:-34px;left:50%;transform:translateX(-50%);font-size:40px}
+.frame .fh{position:absolute;font-size:24px;color:#ff5d8f;animation:tw 1.6s ease-in-out infinite alternate}
+
+/* ---------- PHONG BÌ HỒNG ---------- */
+.env{position:relative;width:300px;height:190px;cursor:pointer;margin-top:60px;perspective:800px;
+  animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 14px 20px rgba(184,71,107,.3));transition:opacity .5s,transform .5s}
+.env-back{position:absolute;inset:0;z-index:0;background:#f27aa0;border:3px solid #a8325a;border-radius:16px}
+.env-paper{position:absolute;left:9%;right:9%;top:7%;height:84%;z-index:2;border:2px solid #a8325a;border-radius:8px;
+  background:#fffafc repeating-linear-gradient(transparent 0 15px,#f6d3dd 15px 16px);
+  display:flex;justify-content:center;padding-top:12px;color:#ff5d8f;font-size:22px;
+  transition:transform .9s .45s cubic-bezier(.3,1.3,.5,1)}
+.env-pocket{position:absolute;left:3px;right:3px;top:3px;bottom:3px;z-index:3;border-radius:0 0 13px 13px;
+  background:linear-gradient(165deg,#ffd6e3 0%,#ffb3ca 100%);clip-path:polygon(0 0,50% 56%,100% 0,100% 100%,0 100%)}
+.env-pocket svg,.env-flap svg{position:absolute;inset:0;width:100%;height:100%}
+.env-flap{position:absolute;left:3px;right:3px;top:3px;height:60%;z-index:4;transform-origin:top;
+  background:linear-gradient(180deg,#ffa9c3,#ff86ab);clip-path:polygon(0 0,100% 0,50% 100%);
+  transition:transform .6s,z-index 0s .3s}
+.seal{position:absolute;left:50%;top:60%;transform:translate(-50%,-50%);z-index:5;width:50px;height:50px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ff7aa2,#d63a6c);border:3px dashed #ffd1df;outline:3px solid #b8305f;
+  color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 8px rgba(0,0,0,.2);
+  transition:opacity .3s,transform .3s}
+.env-to{position:absolute;left:0;right:0;bottom:16px;z-index:5;color:#a8325a;font-weight:700;font-size:20px;letter-spacing:1px;
+  text-shadow:0 2px 0 #fff}
+.env-dot{position:absolute;z-index:5;color:#fff;font-size:16px;animation:tw 1.6s ease-in-out infinite alternate}
+.env-chibi{position:absolute;right:-58px;bottom:72%;width:110px;z-index:6;filter:drop-shadow(0 6px 8px rgba(0,0,0,.15))}
+.env.open{animation:none}
+.env.open .env-flap{transform:rotateX(180deg);z-index:1}
+.env.open .seal{opacity:0;transform:translate(-50%,-50%) scale(.3)}
+.env.open .env-paper{transform:translateY(-62%)}
+.env.gone{opacity:0;transform:scale(.7) translateY(-30px)}
+
+/* ---------- Lá thư to toàn màn hình ---------- */
+#letterBox.in{animation:unfold 1s cubic-bezier(.2,.9,.3,1)}
+@keyframes unfold{0%{transform:translateY(40px) scale(.25,.04);opacity:0}45%{transform:scale(.55,.55);opacity:1}100%{transform:none}}
+.bigletter{position:relative;width:min(1150px,95vw);height:88vh;height:88dvh;margin-top:30px;border:2px solid #2b3a4a;border-radius:26px;
+  background:#fffafc repeating-linear-gradient(transparent 0 31px,#f6d3dd 31px 32px);box-shadow:0 18px 40px rgba(0,0,0,.18)}
+.letter-inner{display:grid;grid-template-columns:1fr 1.1fr;gap:30px;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;padding:48px 40px 30px}
+.letter{white-space:pre-line;text-align:left;font-size:clamp(17px,2.3vw,22px);line-height:1.9;font-weight:600}
+.letter-chibi{position:absolute;top:-70px;right:28px;width:100px;z-index:3}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:26px 22px;align-content:center;padding:14px}
+.polaroid{position:relative;background:#fff;padding:10px 10px 30px;border:2px solid #333;border-radius:6px;
+  box-shadow:0 8px 16px rgba(0,0,0,.15);opacity:0;transform:scale(.3) rotate(var(--r));
+  transition:opacity .6s,transform .6s cubic-bezier(.3,1.6,.5,1)}
+.polaroid.in{opacity:1;transform:rotate(var(--r))}
+.polaroid.in:hover{transform:rotate(0) scale(1.06);z-index:2}
+.polaroid::before{content:"";position:absolute;top:-12px;left:50%;width:70px;height:22px;margin-left:-35px;
+  background:rgba(255,182,203,.75);transform:rotate(-4deg)}
+.polaroid img{width:100%;aspect-ratio:1;object-fit:cover;display:block;border-radius:3px}
+.polaroid .cap{position:absolute;left:0;right:0;bottom:6px;font-size:13px}
+.polaroid:nth-child(5){grid-column:1/-1;justify-self:center;width:55%}
+.polaroid.empty img{display:none}
+.polaroid.empty::after{content:attr(data-name);display:flex;align-items:center;justify-content:center;aspect-ratio:1;background:#f6e3ea;color:#c0587a;font-size:14px}
+
+/* ---------- ĐIỆN THOẠI ---------- */
+@media(max-width:720px){
+  .stage{gap:16px;padding:14px}
+  .txt{font-size:18px;letter-spacing:.5px;padding:0 6px}
+  .title{font-size:30px}
+  .btns{gap:26px}
+  .jelly{font-size:32px;width:150px}
+  .jelly .twin{transform:scale(.7);top:-24px;right:-24px}
+  .hero-chibi{max-width:60vw}
+  .trio{gap:2px}
+  .side{max-width:27vw}
+  .cakeWrap{max-width:44vw}
+  .card{margin-top:90px;padding:50px 16px 20px}
+  .bcake{transform:scale(.85);margin-top:0}
+  .frame img{width:58vw}
+  .env{width:260px;height:165px}
+  .env-to{font-size:17px}
+  .env-chibi{width:85px;right:-20px}
+  .bigletter{width:96vw;height:84vh;height:84dvh;margin-top:50px}
+  .letter-inner{grid-template-columns:1fr;gap:20px;padding:40px 18px 24px}
+  .letter{font-size:17px;line-height:1.85}
+  .letter-chibi{width:80px;top:-58px;right:16px}
+  .photos{gap:20px 14px;padding:6px}
+  .polaroid{padding:7px 7px 24px}
+  .polaroid:nth-child(5){width:65%}
+}
+</style>
+</head>
+<body>
+
+<!-- MÀN 1 -->
+<section class="stage bg-stars active" id="s1">
+  <div class="txt" id="t1"></div>
+  <div class="later btns" id="b1">
+    <button class="jelly" id="yes">YES</button>
+    <button class="jelly" id="no">NO</button>
+  </div>
+  <div class="pop" id="st1"></div>
+</section>
+
+<!-- MÀN 2 -->
+<section class="stage bg-stars" id="s2">
+  <div class="title" id="t2"></div>
+  <div class="pop" id="st2"></div>
+  <div class="later" id="b2"><button class="jelly sm" onclick="toS3()">next :3</button></div>
+</section>
+
+<!-- MÀN 3: thổi nến -->
+<section class="stage bg-gingham" id="s3">
+  <div class="card">
+    <div class="top" id="st3"></div>
+    <p class="txt" id="t3" style="font-size:18px"></p>
+    <div class="bcake" id="bcake">
+      <div class="candles">
+        <div class="cdl"><i class="fl"></i><b class="smoke"></b></div>
+        <div class="cdl"><i class="fl"></i><b class="smoke"></b></div>
+        <div class="cdl"><i class="fl"></i><b class="smoke"></b></div>
+      </div>
+      <div class="tier t1"></div><div class="tier t2"></div><div class="plate"></div>
+    </div>
+    <div class="later" id="micBox" style="gap:8px">
+      <div class="meter"><i id="lvl"></i></div>
+      <p class="hint" id="hint"></p>
+    </div>
+  </div>
+</section>
+
+<!-- MÀN 4: mở quà -->
+<section class="stage bg-gingham" id="s4">
+  <div class="card">
+    <div class="top" id="st4"></div>
+    <div class="gift" id="gift"><div class="lid"></div><div class="box"></div></div>
+    <div class="later" id="present"></div>
+    <div class="later" id="b4"><button class="jelly sm" onclick="toS5()">next</button></div>
+  </div>
+</section>
+
+<!-- MÀN 5: nền hồng + ảnh rơi + lá thư -->
+<section class="stage bg-pink" id="s5">
+  <div class="deco rain" id="rain"></div>
+
+  <div class="env" id="env">
+    <div class="env-back"></div>
+    <div class="env-paper">♥</div>
+    <div class="env-pocket">
+      <svg viewBox="0 0 294 184" preserveAspectRatio="none">
+        <path d="M0 0 L147 103 L294 0" stroke="#a8325a" stroke-width="3" fill="none"/>
+        <path d="M0 184 L118 85 M294 184 L176 85" stroke="#e06a92" stroke-width="2" fill="none" stroke-dasharray="6 5"/>
+      </svg>
+    </div>
+    <div class="env-flap">
+      <svg viewBox="0 0 294 114" preserveAspectRatio="none">
+        <path d="M0 0 L147 114 L294 0" stroke="#a8325a" stroke-width="6" fill="none"/>
+      </svg>
+    </div>
+    <div class="seal">♥</div>
+    <span class="env-dot" style="left:16px;bottom:16px">✦</span>
+    <span class="env-dot" style="right:18px;bottom:20px;animation-delay:.6s">♥</span>
+    <div class="env-to" id="envTo"></div>
+  </div>
+  <p class="txt" id="envHint" style="font-size:16px;color:#a8325a">chạm để mở thư 💌</p>
+
+  <div class="later" id="letterBox">
+    <div class="bigletter">
+      <div id="st5"></div>
+      <div class="letter-inner">
+        <div class="letter" id="t5"></div>
+        <div class="photos">
+          <div class="polaroid" data-name="pic_1" style="--r:-4deg"><img data-pic="pic_1" alt=""><span class="cap" id="cap1"></span></div>
+          <div class="polaroid" data-name="pic_2" style="--r:3deg"><img data-pic="pic_2" alt=""><span class="cap" id="cap2"></span></div>
+          <div class="polaroid" data-name="pic_3" style="--r:3deg"><img data-pic="pic_3" alt=""><span class="cap" id="cap3"></span></div>
+          <div class="polaroid" data-name="pic_4" style="--r:-3deg"><img data-pic="pic_4" alt=""><span class="cap" id="cap4"></span></div>
+          <div class="polaroid" data-name="pic_5" style="--r:2deg"><img data-pic="pic_5" alt=""><span class="cap" id="cap5"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<audio id="music" loop></audio>
+
+<script>
+/* ================== SỬA NỘI DUNG Ở ĐÂY ================== */
+const CONFIG = {
+  question: "I have a surprise for you, wanna see it? 🙈🙈🙈",
+  title:    "🙈Happy Birthday🙈",
+  blowText: "Huỳnh Huỳnh thổi nến và Ước nào!🙈🙈🙈 ",
+  music: "Happy-birthday_1.mp3",
+  blowThreshold: 140,   // khó tắt nến -> giảm (vd 110); nói chuyện cũng tắt -> tăng (vd 170)
+
+  images: {
+    chibi: "chibi_T.png",   // Pic 1 - chibi trong quả cầu
+    cake:  "cake.png",      // Pic 2 - bánh Happy Birthday
+    side:  "stand.png",     // Pic 3 - chibi đứng 2 bên bánh
+    gift:  "gift.jpg"       // Pic 4 - món quà
+  },
+
+  /* ----- KÍCH THƯỚC (px) ----- */
+  sizes: {
+    scene1Chibi: 250,   // Cảnh 1: cỡ chibi
+    cake: 350,          // Cảnh 2: cỡ bánh sinh nhật
+    side: 320           // Cảnh 2: cỡ 2 ảnh đứng hai bên bánh
+  },
+
+  /* ----- CẢNH LÁ THƯ ----- */
+  rainImages: ["chibi_H.jpg", "chibi_T.png"],  // các ảnh rơi làm nền
+  ballSize: [70, 140],    // cỡ ảnh rơi (nhỏ nhất, lớn nhất)
+  ballEvery: 400,         // càng nhỏ rơi càng dày
+  envelopeTo: "Gửi Huỳnh Huỳnh",
+
+  photoCaptions: ["", "", "", "", ""],  // chữ nhỏ dưới pic_1 ... pic_5
+  letter: `Gửi cậu người bạn tuyệt vời nhất của mình:
+  Chúc cậu một ngày sinh nhật zuii zẻ nhoô!!
+  Chúc cậu luôn may mắn, luôn cute phomaiquee, tuổi mới chúc cậu có tất cả những gì mình muốn nha!!
+  Cậu luôn là người tuyệt vời nhất đối vối tuii <3
+Love u! <3`
+};
+/* ======================================================== */
+
+/* Nếu chưa có file ảnh trong thư mục, code dùng tạm link online */
+const ONLINE = {
+  chibi: "https://www.genspark.ai/api/files/s/maIukul7",
+  cake:  "https://www.genspark.ai/api/files/s/OHzDdQZ9",
+  side:  "https://www.genspark.ai/api/files/s/IcW1Mnr6",
+  gift:  "https://www.genspark.ai/api/files/s/ChOp03fz"
+};
+const IMG = {};
+let RAIN = [];
+const loadSrc = (src, fallback) => new Promise(r => {
+  const t = new Image();
+  t.onload = () => r(src);
+  t.onerror = () => r(fallback || null);
+  t.src = src;
+});
+async function prepareImages(){
+  for (const k of Object.keys(CONFIG.images)) IMG[k] = await loadSrc(CONFIG.images[k], ONLINE[k]);
+  const list = await Promise.all(CONFIG.rainImages.map(f => {
+    const k = Object.keys(CONFIG.images).find(k => CONFIG.images[k] === f);
+    return loadSrc(f, k ? ONLINE[k] : null);
+  }));
+  RAIN = list.filter(Boolean);
+  if (!RAIN.length) RAIN = [IMG.chibi];
+}
+
+const $ = s => document.querySelector(s);
+const COLORS = ['#c94a4a','#4f9a6e','#7fa8d8','#e7a3c3','#b27cff','#e9b949'];
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const go = n => { document.querySelectorAll('.stage').forEach(s => s.classList.remove('active')); $('#s'+n).classList.add('active'); };
+const show = id => $('#'+id).classList.add('in');
+
+/* ---------- Hình vẽ trang trí ---------- */
+const cherry = outline => `
+<svg viewBox="0 0 60 60" width="100%"><path d="M32 6Q22 22 18 36M32 6Q38 24 42 38" stroke="#5f9246" stroke-width="2.5" fill="none"/>
+  <path d="M32 6q13-5 19 4q-11 4-19-4z" fill="#79bf63"/>
+  <circle cx="17" cy="44" r="11" fill="${outline?'#fff':'#e53935'}" stroke="#e53935" stroke-width="2.5"/>
+  <circle cx="43" cy="45" r="11" fill="${outline?'#fff':'#e53935'}" stroke="#e53935" stroke-width="2.5"/></svg>`;
+const balloon = c => `
+<svg viewBox="0 0 40 90" width="100%"><path d="M20 52q-4 14 2 22q5 8-1 16" stroke="#888" fill="none" stroke-width="1.5"/>
+  <ellipse cx="20" cy="26" rx="17" ry="22" fill="${c}" stroke="#333" stroke-width="2"/>
+  <path d="M17 48l3 5l3-5z" fill="${c}" stroke="#333" stroke-width="2"/><ellipse cx="13" cy="18" rx="4" ry="7" fill="#fff" opacity=".5"/></svg>`;
+const starSVG = s => `<svg width="${s}" height="${s}" viewBox="0 0 24 24"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z" fill="#c9a2ff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
+
+/* ---------- Nút thạch tím ---------- */
+document.querySelectorAll('.jelly').forEach(btn => {
+  const big = !btn.classList.contains('sm');
+  btn.innerHTML = `<span class="lbl">${btn.textContent}</span>
+    <span class="spk" style="left:9%;top:28%">✦</span>
+    <span class="spk" style="left:20%;bottom:18%;font-size:.75em;animation-delay:.5s">✦</span>
+    <span class="spk" style="right:20%;top:30%;animation-delay:.9s">✦</span>
+    <span class="spk" style="right:13%;top:52%;font-size:.7em;animation-delay:.3s">✦</span>
+    ${big ? `<span class="twin">${starSVG(44)}${starSVG(34)}</span>` : ''}`;
+});
+
+/* ---------- Trang trí nền ---------- */
+function deco(id, n, make, o){
+  const el = $('#'+id);
+  for (let i = 0; i < n; i++){
+    const d = document.createElement('div');
+    d.className = 'deco ' + o.cls; d.innerHTML = make(i);
+    const size = o.min + Math.random()*(o.max - o.min), dur = o.dur*(.7 + Math.random()*.7);
+    Object.assign(d.style, { width:size+'px', fontSize:size+'px', left:Math.random()*95+'%',
+      animationDuration:dur+'s', animationDelay:-Math.random()*dur+'s' });
+    if (o.cls === 'rise') d.style.bottom = '-120px'; else d.style.top = Math.random()*95 + '%';
+    d.style.setProperty('--r', (Math.random()*40-20) + 'deg');
+    el.prepend(d);
+  }
+}
+const star = i => `<span style="color:${COLORS[i%COLORS.length]}">★</span>`;
+deco('s1', 60, star, {cls:'twinkle', min:10, max:20, dur:2.4});
+deco('s2', 45, star, {cls:'twinkle', min:10, max:20, dur:2.4});
+deco('s2', 14, i => balloon(['#ffb3c6','#d9c2ff','#bfe0ff','#fff1a8','#c8f0d4'][i%5]), {cls:'rise', min:34, max:58, dur:12});
+deco('s3', 12, i => cherry(i%2), {cls:'sway', min:38, max:60, dur:3});
+deco('s4', 12, i => cherry(i%2), {cls:'sway', min:38, max:60, dur:3});
+
+/* ---------- Gắn ảnh vào các màn ---------- */
+function renderImages(){
+  const S = CONFIG.sizes;
+
+  $('#st1').innerHTML = `<div class="bob" style="position:relative">
+    <span style="position:absolute;left:-30px;top:30px;color:#e53935;font-size:30px;font-weight:700">!!</span>
+    <img class="hero-chibi" src="${IMG.chibi}" style="width:${S.scene1Chibi}px"></div>`;
+
+  $('#st2').innerHTML = `<div class="trio">
+    <div class="bob" style="animation-delay:-.5s"><img class="side" src="${IMG.side}" style="width:${S.side}px"></div>
+    <div class="cakeWrap bob" style="width:${S.cake}px"><img src="${IMG.cake}"></div>
+    <div class="bob" style="animation-delay:-1s"><img class="side flip" src="${IMG.side}" style="width:${S.side}px"></div>
+  </div>`;
+
+  $('#st3').innerHTML = `<div class="bob"><img class="stk-chibi" src="${IMG.chibi}"></div>`;
+  $('#st4').innerHTML = `<div class="bob"><img class="stk-chibi" src="${IMG.chibi}"></div>`;
+
+  $('#present').innerHTML = `<div class="frame">
+    <img src="${IMG.gift}">
+    <span class="fh" style="left:-16px;top:-14px">♥</span>
+    <span class="fh" style="right:-16px;top:30%;color:#c9a2ff;animation-delay:.4s">✦</span>
+    <span class="fh" style="left:-18px;bottom:20%;color:#c9a2ff;animation-delay:.8s">✦</span>
+    <span class="fh" style="right:-14px;bottom:-14px;animation-delay:.2s">♥</span>
+  </div>`;
+
+  $('#env').insertAdjacentHTML('beforeend', `<img class="env-chibi bob" src="${IMG.chibi}">`);
+  $('#envTo').textContent = CONFIG.envelopeTo;
+  $('#st5').innerHTML = `<img class="letter-chibi bob" src="${IMG.chibi}">`;
+}
+
+/* ---------- Ảnh pic_1 ... pic_5 (tự nhận .jpg / .png / .jpeg / .webp) ---------- */
+function loadPic(img, name){
+  const exts = ['jpg','png','jpeg','webp','JPG','PNG','JPEG'];
+  let i = 0;
+  img.onerror = () => {
+    if (++i < exts.length) img.src = `${name}.${exts[i]}`;
+    else img.closest('.polaroid').classList.add('empty');
+  };
+  img.src = `${name}.${exts[0]}`;
+}
+document.querySelectorAll('[data-pic]').forEach(img => loadPic(img, img.dataset.pic));
+CONFIG.photoCaptions.forEach((c, i) => { const el = $('#cap'+(i+1)); if (el) el.textContent = c; });
+if (CONFIG.music) $('#music').src = CONFIG.music;
+
+/* ---------- Hiệu ứng chung ---------- */
+function type(el, text, speed=70){
+  return new Promise(done => {
+    const ch = Array.from(text); el.textContent = ''; let i = 0;
+    const t = setInterval(() => { el.textContent += ch[i++]; if (i >= ch.length){ clearInterval(t); done(); } }, speed);
+  });
+}
+function waveify(el){
+  el.innerHTML = Array.from(el.textContent).map((c,i) => `<span style="animation-delay:${i*.07}s">${c===' '?'&nbsp;':c}</span>`).join('');
+  el.classList.add('wave');
+}
+function party(){
+  const end = Date.now() + 2200;
+  (function f(){
+    confetti({particleCount:5, angle:60, spread:60, origin:{x:0}, colors:COLORS});
+    confetti({particleCount:5, angle:120, spread:60, origin:{x:1}, colors:COLORS});
+    if (Date.now() < end) requestAnimationFrame(f);
+  })();
+}
+function fireworks(ms=3000){
+  const end = Date.now() + ms;
+  const t = setInterval(() => {
+    if (Date.now() > end) return clearInterval(t);
+    confetti({particleCount:40, startVelocity:28, spread:360, ticks:70, colors:COLORS, shapes:['star','circle'],
+      origin:{x:.2 + Math.random()*.6, y:.1 + Math.random()*.4}});
+  }, 350);
+}
+let lastTrail = 0;
+document.addEventListener('pointermove', e => {
+  if (Date.now() - lastTrail < 40) return; lastTrail = Date.now();
+  const s = document.createElement('span'); s.className = 'trail'; s.textContent = '✦';
+  Object.assign(s.style, {left:e.clientX+'px', top:e.clientY+'px', color:COLORS[Math.floor(Math.random()*COLORS.length)]});
+  document.body.append(s); setTimeout(() => s.remove(), 800);
+});
+
+/* ================== MÀN 1 ================== */
+window.onload = async () => {
+  await prepareImages();
+  renderImages();
+  setTimeout(() => show('st1'), 300);
+  await type($('#t1'), CONFIG.question);
+  show('b1');
+};
+const yes = $('#yes'), no = $('#no');
+const noLabels = ['NO','chắc chưa?','nghĩ lại đi','đi mà 🥺','hông cho!'];
+let tries = 0;
+function dodge(e){
+  e.preventDefault(); tries++;
+  const mx = Math.max(20, innerWidth/2 - 110), my = Math.max(20, innerHeight/2 - 90);
+  no.style.translate = `${(Math.random()*2-1)*mx}px ${(Math.random()*2-1)*my}px`;
+  no.style.scale = Math.max(.55, 1 - tries*.08);
+  yes.style.scale = Math.min(1.6, 1 + tries*.1);
+  const l = no.querySelector('.lbl'); l.textContent = noLabels[tries % noLabels.length];
+  l.style.fontSize = l.textContent.length > 3 ? '22px' : '';
+}
+no.addEventListener('pointerenter', dodge);
+no.addEventListener('click', dodge);
+yes.addEventListener('click', toS2);
+
+/* ================== MÀN 2 ================== */
+async function toS2(){
+  $('#music').play().catch(() => {});
+  confetti({particleCount:150, spread:120, origin:{y:.6}, colors:COLORS, shapes:['star','circle']});
+  go(2); party();
+  await wait(400);
+  await type($('#t2'), CONFIG.title, 90);
+  waveify($('#t2'));
+  show('st2');
+  await wait(700);
+  show('b2');
+}
+
+/* ================== MÀN 3: THỔI NẾN ================== */
+const cdls = [...document.querySelectorAll('.cdl')];
+let micStream, micCtx, finished = false;
+
+async function toS3(){
+  go(3);
+  await wait(500);
+  await type($('#t3'), CONFIG.blowText, 55);
+  $('#hint').textContent = '🎤 cho phép micro rồi thổi nha (hoặc chạm vào bánh)';
+  show('micBox');
+  startMic();
+}
+async function startMic(){
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+    micCtx = new (window.AudioContext || window.webkitAudioContext)(); await micCtx.resume();
+    const an = micCtx.createAnalyser(); an.fftSize = 512;
+    micCtx.createMediaStreamSource(micStream).connect(an);
+    const data = new Uint8Array(an.frequencyBinCount);
+    $('#hint').textContent = '🎤 thổi thật mạnh vào micro nào!';
+    let hold = 0;
+    (function loop(){
+      if (finished) return;
+      an.getByteFrequencyData(data);
+      let sum = 0; for (let i = 1; i < 24; i++) sum += data[i];
+      const lvl = sum / 23;
+      $('#lvl').style.width = Math.min(100, lvl/1.8) + '%';
+      $('#bcake').style.setProperty('--lean', Math.min(45, lvl/4) + 'deg');
+      if (lvl > CONFIG.blowThreshold){ if (++hold > 8){ blowOne(); hold = 0; } }
+      else hold = Math.max(0, hold - 1);
+      requestAnimationFrame(loop);
+    })();
+  } catch(e){
+    $('#hint').textContent = 'chạm vào bánh để thổi từng ngọn nến nha 🕯️';
+  }
+}
+$('#bcake').addEventListener('click', blowOne);
+function blowOne(){
+  const c = cdls.find(c => !c.classList.contains('out'));
+  if (!c) return;
+  c.classList.add('out');
+  if (cdls.every(c => c.classList.contains('out'))) allBlown();
+}
+async function allBlown(){
+  finished = true;
+  if (micStream) micStream.getTracks().forEach(t => t.stop());
+  if (micCtx) micCtx.close();
+  $('#bcake').style.setProperty('--lean','0deg');
+  $('#hint').textContent = 'yayy! điều ước sẽ thành sự thật ✨';
+  $('#lvl').style.width = '100%';
+  party(); fireworks(2500);
+  await wait(2800);
+  go(4);
+}
+
+/* ================== MÀN 4: MỞ QUÀ ================== */
+$('#gift').addEventListener('click', async () => {
+  const g = $('#gift'); if (g.classList.contains('open')) return;
+  g.classList.add('open');
+  confetti({particleCount:120, spread:100, origin:{y:.6}, colors:COLORS, shapes:['star','circle']});
+  await wait(700);
+  g.style.display = 'none';
+  show('present');
+  await wait(800);
+  show('b4');
+});
+
+/* ================== MÀN 5: ẢNH RƠI + LÁ THƯ ================== */
+const rain = $('#rain');
+let rainOn = false, rainIndex = 0;
+function dropBall(pre){
+  const [mn, mx] = CONFIG.ballSize;
+  const size = mn + Math.random()*(mx - mn);
+  const depth = (size - mn) / Math.max(1, mx - mn);
+  const dur = 14 - depth*6;
+  const src = RAIN[rainIndex++ % RAIN.length];
+  const d = document.createElement('div');
+  d.className = 'drop';
+  Object.assign(d.style, {width:size+'px', left:(Math.random()*100 - 5)+'vw', opacity:.6 + depth*.4, animationDuration:dur+'s'});
+  if (pre) d.style.animationDelay = -(Math.random()*dur) + 's';
+  d.innerHTML = `<img src="${src}" style="animation-duration:${1.5 + Math.random()*2}s">`;
+  rain.appendChild(d);
+  d.addEventListener('animationend', e => { if (e.target === d) d.remove(); });
+}
+function dropHeart(pre){
+  const h = document.createElement('div');
+  h.className = 'fheart'; h.textContent = '♥';
+  const dur = 7 + Math.random()*6;
+  Object.assign(h.style, {left:Math.random()*100+'vw', fontSize:(14 + Math.random()*18)+'px', animationDuration:dur+'s',
+    color:['#ff8fab','#ff5d8f','#c9a2ff','#e53935','#ffb3c6'][Math.floor(Math.random()*5)]});
+  if (pre) h.style.animationDelay = -(Math.random()*dur) + 's';
+  rain.appendChild(h);
+  h.addEventListener('animationend', () => h.remove());
+}
+function startRain(){
+  if (rainOn) return; rainOn = true;
+  for (let i = 0; i < 20; i++) dropBall(true);
+  for (let i = 0; i < 20; i++) dropHeart(true);
+  setInterval(() => { if (!document.hidden) dropBall(); }, CONFIG.ballEvery);
+  setInterval(() => { if (!document.hidden) dropHeart(); }, 500);
+}
+
+function toS5(){ go(5); startRain(); }
+
+$('#env').addEventListener('click', async () => {
+  const env = $('#env'); if (env.classList.contains('open')) return;
+  env.classList.add('open');
+  $('#envHint').style.display = 'none';
+  confetti({particleCount:60, spread:80, origin:{y:.55}, colors:['#ff8fab','#ff5d8f','#ffd1df','#c9a2ff']});
+  await wait(1500);
+  env.classList.add('gone');
+  await wait(500);
+  env.style.display = 'none';
+  show('letterBox');
+  for (let i = 0; i < 12; i++) setTimeout(dropBall, i*80);
+  await wait(900);
+  document.querySelectorAll('.polaroid').forEach((p, i) => setTimeout(() => p.classList.add('in'), i*350));
+  await type($('#t5'), CONFIG.letter, 40);
+  fireworks(2000);
+});
+</script>
+</body>
+</html>
+
